@@ -18,32 +18,45 @@ Here are the steps you can take to automate this process:
 
 
 from ftplib import FTP
+from datetime import datetime
 
-host = "ftp.dlptest.com"
-user = "dlpuser"
-password = "rNrKYTX9g7z3RgJRmxWuGHbeu"  #should be taken from an external file, preferably encrypted
+log_file = "Automated File Transfer.log"
+
+login = {
+"host": "ftp.dlptest.com",
+"user": "dlpuser",
+"passwd" : "rNrKYTX9g7z3RgJRmxWuGHbeu" }  #should be taken from an external file, preferably encrypted
 
 src_dir = ""
 dest_dir = "somedir/someotherdir"
 
-ftp = FTP(host, user=user, passwd=password)
-if src_dir != "":
-    ftp.cwd(src_dir)
+def file_transfer(login, src_dir="", dest_dir=""):
+  ftp = FTP(**login)
+  if src_dir != "":
+      ftp.cwd(src_dir)
 
-if dest_dir != "":
-    #check existence of folder(s) create if necessary and move to it
-    pass
-#get the files list
-#files = ftp.mlsd()
-files = []
-ftp.retrlines('NLST', files.append)
-print(files)
+  if dest_dir != "":
+      #check existence of folder(s) create if necessary and move to it
+      pass
+  files = []
+  ftp.retrlines('NLST', files.append)
 
-for file in files:
-    #check existence
-    #log
-    with open(file, 'wb') as fp:
-        ftp.retrbinary('RETR {}'.format(file), fp.write)
-    #break
+  for file in files:
+      #check existence
+      #log
+      with open(file, 'wb') as fp:
+          ftp.retrbinary('RETR {}'.format(file), fp.write)
+      #break
 
-ftp.quit()
+  ftp.quit()
+
+
+def log(string, log_file=log_file):
+  string = "{}: {}\n".format(datetime.now(), string)
+  with open(log_file, 'a') as f:
+    f.write(string)
+    print(string)
+
+
+log("1st line")
+log("2nd line")
