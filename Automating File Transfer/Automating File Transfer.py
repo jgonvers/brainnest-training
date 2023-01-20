@@ -22,9 +22,13 @@ from datetime import datetime
 from shutil import move
 from os.path import join, exists
 from os import makedirs, remove
+from time import sleep
+
+import schedule
 
 
 log_file = "Automated File Transfer.log"
+daily_execution_time = "11:30"
 
 login = {
 "host": "ftp.dlptest.com",
@@ -35,12 +39,14 @@ src_dir = ""
 dest_dir = "temp"
 
 def file_transfer(login, src_dir="", dest_dir=""):
+  log("starting file transfer")
   try:
     try:
       ftp = FTP(**login)
     except Exception as e:
       log("could not connect to {}".format(login['host']))
       log(str(e))
+      log("ending file transfer")
       return(False)
     
     if src_dir != "":
@@ -50,6 +56,7 @@ def file_transfer(login, src_dir="", dest_dir=""):
           log("could not access source folder {}".format(src_dir))
           log(str(e))
           ftp.quit()
+          log("ending file transfer")
           return(False)
     
     files = []
@@ -59,6 +66,7 @@ def file_transfer(login, src_dir="", dest_dir=""):
           log("could not list files")
           log(str(e))
           ftp.quit()
+          log("ending file transfer")
           return(False)
     
     if not exists(dest_dir):
@@ -90,8 +98,10 @@ def file_transfer(login, src_dir="", dest_dir=""):
   except Exception as e:
     log(str(e))
     ftp.quit()
+    log("ending file transfer")
     return(False)
   ftp.quit()
+  log("ending file transfer")
   return(True)
 
 
@@ -101,4 +111,8 @@ def log(string, log_file=log_file):
     f.write(string)
   print(string)
 
-file_transfer(login, dest_dir=dest_dir)
+if __name__ == "__main__":
+  schedule.every().day.at(daily_execution_time).do(file_transfer, login=login, src_dir=src_dir, dest_dir=dest_dir)
+  while(True):
+    schedule.run_pending()
+    sleep(5)
