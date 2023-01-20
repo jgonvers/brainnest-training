@@ -21,7 +21,7 @@ from ftplib import FTP
 from datetime import datetime
 from shutil import move
 from os.path import join, exists
-from os import makedirs
+from os import makedirs, remove
 
 
 log_file = "Automated File Transfer.log"
@@ -35,38 +35,70 @@ src_dir = ""
 dest_dir = "temp"
 
 def file_transfer(login, src_dir="", dest_dir=""):
-  ftp = FTP(**login)
-  if src_dir != "":
-      ftp.cwd(src_dir)
-  files = []
-  ftp.retrlines('NLST', files.append)
-  
-  if not exists(dest_dir):
-    makedirs(dest_dir)
+  try:
+    try:
+      ftp = FTP(**login)
+    except Exception as e:
+      log("could not connect to {}".format(login['host']))
+      log(str(e))
+      return(False)
     
-
-  for file in files:
-      log("attempting {}".format(file))
-      dest_file = join(dest_dir, file)
-      if exists(dest_file):
-        log("{} already exists")
-        continue
-      with open(file, 'wb') as fp:
-          try:
-            ftp.retrbinary('RETR {}'.format(file), fp.write)
-          except Exception as e:
-            log("error downloading file")
-            log(str(e))
-            continue
-      move(file,dest_file)
-
+    if src_dir != "":
+        try:
+          ftp.cwd(src_dir)
+        except Exception as e:
+          log("could not access source folder {}".format(src_dir))
+          log(str(e))
+          ftp.quit()
+          return(False)
+    
+    files = []
+    try:
+      ftp.retrlines('NLST', files.append)
+    except Exception as e:
+          log("could not list files")
+          log(str(e))
+          ftp.quit()
+          return(False)
+    
+    if not exists(dest_dir):
+      makedirs(dest_dir)
+      
+    for file in files:
+        log("attempting {}".format(file))
+        dest_file = join(dest_dir, file)
+        if exists(dest_file):
+          log("{} already exists".format(dest_file))
+          continue
+        with open(file, 'wb') as fp:
+            try:
+              ftp.retrbinary('RETR {}'.format(file), fp.write)
+            except Exception as e:
+              log("error downloading file")
+              log(str(e))
+              remove(file)
+              continue
+            log("downloaded")
+        try:
+          move(file,dest_file)
+        except Exception as e:
+          log("error moving file")
+          log(str(e))
+          remove(file)
+          continue
+        log("moved to {}".format(dest_file))
+  except Exception as e:
+    log(str(e))
+    ftp.quit()
+    return(False)
   ftp.quit()
+  return(True)
 
 
 def log(string, log_file=log_file):
   string = "{}: {}\n".format(datetime.now(), string)
   with open(log_file, 'a') as f:
     f.write(string)
-    print(string)
+  print(string)
 
 file_transfer(login, dest_dir=dest_dir)
