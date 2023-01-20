@@ -19,6 +19,10 @@ Here are the steps you can take to automate this process:
 
 from ftplib import FTP
 from datetime import datetime
+from shutil import move
+from os.path import join, exists
+from os import makedirs
+
 
 log_file = "Automated File Transfer.log"
 
@@ -28,25 +32,33 @@ login = {
 "passwd" : "rNrKYTX9g7z3RgJRmxWuGHbeu" }  #should be taken from an external file, preferably encrypted
 
 src_dir = ""
-dest_dir = "somedir/someotherdir"
+dest_dir = "temp"
 
 def file_transfer(login, src_dir="", dest_dir=""):
   ftp = FTP(**login)
   if src_dir != "":
       ftp.cwd(src_dir)
-
-  if dest_dir != "":
-      #check existence of folder(s) create if necessary and move to it
-      pass
   files = []
   ftp.retrlines('NLST', files.append)
+  
+  if not exists(dest_dir):
+    makedirs(dest_dir)
+    
 
   for file in files:
-      #check existence
-      #log
+      log("attempting {}".format(file))
+      dest_file = join(dest_dir, file)
+      if exists(dest_file):
+        log("{} already exists")
+        continue
       with open(file, 'wb') as fp:
-          ftp.retrbinary('RETR {}'.format(file), fp.write)
-      #break
+          try:
+            ftp.retrbinary('RETR {}'.format(file), fp.write)
+          except Exception as e:
+            log("error downloading file")
+            log(str(e))
+            continue
+      move(file,dest_file)
 
   ftp.quit()
 
@@ -57,6 +69,4 @@ def log(string, log_file=log_file):
     f.write(string)
     print(string)
 
-
-log("1st line")
-log("2nd line")
+file_transfer(login, dest_dir=dest_dir)
