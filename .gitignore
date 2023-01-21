@@ -140,3 +140,5 @@ data/
 
 .idea
 .DS_Store
+
+*.db
