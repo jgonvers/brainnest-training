@@ -16,14 +16,15 @@ Here are the steps you can take to automate this process:
 
     You can also set up a log file to keep track of the files that have been transferred and any errors that may have occurred during the transfer process. '''
 
+#TODO Add logger?
+
 from ftplib import FTP
 from datetime import datetime
-import os, shutil, schedule, time
+import os, shutil, schedule, time, json
 
 HOST = "ftp.dlptest.com"
 TEMP_FOLDER = f"{os.getcwd()}/.temp/"
 USER, PASSWORD = "dlpuser","rNrKYTX9g7z3RgJRmxWuGHbeu"    # Provided by the FTP server
-destination = input("Insert the network location to store downloaded data:\n")    # Gets input from user to save downloaded files on desired location.
 
 def download(ftp,log,files=[],destination=""):
     for file in files:
@@ -49,6 +50,9 @@ def move(log,files=[],destination=""):
             print(msg)
 
 def main():
+    file = open(f"{os.getcwd()}/src/settings.json")
+    destination = json.load(file)["DownloadFolder"] 
+
     ftp = FTP(HOST,USER,PASSWORD)    # Connects to the FTP server
     
     log_location = f"{destination}/log.txt"
@@ -69,6 +73,7 @@ def main():
 
     move(log,os.listdir(TEMP_FOLDER),destination)
     log.close()
+    file.close()
     os.removedirs(TEMP_FOLDER)    # Deletes temporary folder
 
 schedule.every().day.at("20:00").do(main)
