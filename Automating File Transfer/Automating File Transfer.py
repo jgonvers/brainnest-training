@@ -68,6 +68,9 @@ def main():
         logger.exception(f"Could not find settings file: {e}")
         return
 
+    if not os.path.exists(destination):
+        os.makedirs(destination)
+
     try:
         ftp = FTP(host,user,password)    # Connects to the FTP server
     except Exception as e:
@@ -99,9 +102,9 @@ def main():
         logger.info("Successfully removed temporary folder.")
     except Exception as e:
         logger.exception("Error deleting temporary folder: {e}")
+main()
+# schedule.every().day.at("20:00").do(main)
 
-schedule.every().day.at("20:00").do(main)
-
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+# while True:
+#     schedule.run_pending()
+#     time.sleep(1)
