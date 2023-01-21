@@ -16,34 +16,96 @@ Here are the steps you can take to automate this process:
 
     You can also set up a log file to keep track of the files that have been transferred and any errors that may have occurred during the transfer process. '''
 
-
 from ftplib import FTP
+import os, shutil, schedule, time, json, logging
 
-host = "ftp.dlptest.com"
-user = "dlpuser"
-password = "rNrKYTX9g7z3RgJRmxWuGHbeu"  #should be taken from an external file, preferably encrypted
+# Global constants
+DAILY_TIME = "20:00"
+SRC_FOLDER = f"{os.getcwd()}/src/"
+TEMP_FOLDER = f"{os.getcwd()}/.temp/"
 
-src_dir = ""
-dest_dir = "somedir/someotherdir"
+# Logger configuration
+logging.basicConfig(level=logging.DEBUG,format="%(asctime)s : %(levelname)s - %(message)s")
 
-ftp = FTP(host, user=user, passwd=password)
-if src_dir != "":
-    ftp.cwd(src_dir)
+file_handler = logging.FileHandler(f"{SRC_FOLDER}/File Transfer.log")
+file_handler.setFormatter(logging.Formatter("%(asctime)s : %(levelname)s - %(message)s"))
 
-if dest_dir != "":
-    #check existence of folder(s) create if necessary and move to it
-    pass
-#get the files list
-#files = ftp.mlsd()
-files = []
-ftp.retrlines('NLST', files.append)
-print(files)
+logger = logging.getLogger("AFT")
+logger.addHandler(file_handler)
 
-for file in files:
-    #check existence
-    #log
-    with open(file, 'wb') as fp:
-        ftp.retrbinary('RETR {}'.format(file), fp.write)
-    #break
+def download(ftp,files=[],destination=None):
+    for file in files:
+        try:
+            if file not in os.listdir(destination) and file != "frep" and file != "input":    # Only downloads files that have not been previously downloaded. The frep and input files have been excluded since they give error due to lack of permission
+                logger.info(f"Downloading {file}...")
+                ftp.retrbinary(f"RETR {file}",open(f"{TEMP_FOLDER}/{file}","wb").write)    # Downloads files from FTP server
+                logger.info(f"Downloaded {file}.")
+        except Exception as e:
+            logger.exception(f"Error while trying to download {file}: {e}")
 
-ftp.quit()
+def move(files=[],destination=None):
+    for file in files:
+        try:
+            logger.info(f"Moving {file}...")
+            shutil.move(f"{TEMP_FOLDER}/{file}",f"{destination}/{file}")    # Moves downloaded files from local storage to internal network folder
+            logger.info(f"Moved {file}.")
+        except Exception as e:
+            logger.exception(f"Error moving {file}: {e}")
+
+
+def main():
+    try:
+        file = open(f"{SRC_FOLDER}/settings.json")
+        data = json.load(file)
+
+        host = data["Host"]
+        user = data["User"]
+        password = data["Password"]
+        destination = data["DownloadFolder"]
+        
+        logger.info("Found settings file.")
+    except Exception as e:
+        logger.exception(f"Could not find settings file: {e}")
+        return
+
+    if not os.path.exists(destination):
+        os.makedirs(destination)
+
+    try:
+        ftp = FTP(host,user,password)    # Connects to the FTP server
+        logger.info("Successfully connected to the FTP server.")
+    except Exception as e:
+        logger.exception(f"Failed to login: {e}")
+        return
+
+    if not os.path.exists(TEMP_FOLDER):    # Creates a temporary directory to store downloaded files while not finished
+        os.makedirs(TEMP_FOLDER)
+
+    try:
+        files = ftp.nlst()    # Creates a list of files available to download in the FTP server
+    except Exception as e:
+        logger.exception(f"Failed to retrieve list of files: {e}")
+        return
+
+    download(ftp,files,destination)
+
+    try:
+        ftp.quit()
+        logger.info("Successfully exited the FTP server.")
+    except Exception as e:
+        logger.exception("Failed to exit FTP server: {e}")
+        return
+
+    move(os.listdir(TEMP_FOLDER),destination)
+
+    try:
+        os.removedirs(TEMP_FOLDER)    # Deletes temporary folder
+        logger.info("Successfully removed temporary folder.")
+    except Exception as e:
+        logger.exception("Error deleting temporary folder: {e}")
+
+schedule.every().day.at(DAILY_TIME).do(main)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
