@@ -1,3 +1,5 @@
+from datetime import date
+
 from sqlalchemy import (
     CheckConstraint,
     Column,
@@ -27,14 +29,11 @@ class Transaction(Base):
     id = Column("id", Integer, primary_key=True)
     amount = Column("amount", Float, nullable=False)
     description = Column("description", Text, nullable=True)
-    date = Column("date", Date, nullable=False)
+    date = Column("date", Date, default=date.today(), nullable=False)
 
     __table_args__ = (
         CheckConstraint(amount > 0, name="check_amount_positive"),
     )
-
-    def __init__(self, name):
-        self.name = name
 
 
 class TransactionType(Base):
@@ -50,22 +49,24 @@ class Income(Transaction):
     __tablename__ = "incomes"
 
     type = Column(
-        "type", Integer, ForeignKey("transaction_types.id"), default=1, nullable=False
+        "type",
+        Integer,
+        ForeignKey("transaction_types.id"),
+        default=1,
+        nullable=False,
     )
-
-    def __init__(self, name):
-        super().__init__(name)
 
 
 class Expense(Transaction):
     __tablename__ = "expenses"
 
     type = Column(
-        "type", Integer, ForeignKey("transaction_types.id"), default=2, nullable=False
+        "type",
+        Integer,
+        ForeignKey("transaction_types.id"),
+        default=2,
+        nullable=False,
     )
-
-    def __init__(self, name):
-        super().__init__(name)
 
 
 class Budget(Base):
@@ -88,4 +89,6 @@ try:
     insert_types = session.bulk_save_objects(types)
     session.commit()
 except IntegrityError:
+    session.rollback()
+except AttributeError:
     session.rollback()
