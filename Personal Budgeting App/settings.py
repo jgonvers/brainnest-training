@@ -18,7 +18,7 @@ class SQLiteSettings(BaseSettings):
     db_url: str = pydantic.Field(..., env="DB_URL")
 
 log_level = logging.INFO
-logging.basicConfig(filename='example17.log', encoding='utf-8', level=log_level, format='%(asctime)s %(levelname)s: %(name)s: %(message)s')
+logging.basicConfig(filename='budget.log', encoding='utf-8', level=log_level, format='%(asctime)s %(levelname)s: %(name)s: %(message)s')
 logging.getLogger("sqlalchemy").setLevel(log_level)
 db_echo = (log_level == logging.DEBUG)
 
