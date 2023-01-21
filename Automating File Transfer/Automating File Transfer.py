@@ -19,10 +19,21 @@ Here are the steps you can take to automate this process:
 from ftplib import FTP
 import os, shutil, schedule, time, json, logging
 
-TEMP_FOLDER = f"{os.getcwd()}/.temp/"
+# Global constants
+DAILY_TIME = "20:00"
 SRC_FOLDER = f"{os.getcwd()}/src/"
+TEMP_FOLDER = f"{os.getcwd()}/.temp/"
 
-def download(logger,ftp,files=[],destination=None):
+# Logger configuration
+logging.basicConfig(level=logging.DEBUG)
+
+file_handler = logging.FileHandler(f"{SRC_FOLDER}/File Transfer.log")
+file_handler.setFormatter(logging.Formatter("%(asctime)s : %(levelname)s - %(message)s"))
+
+logger = logging.getLogger("AFT")
+logger.addHandler(file_handler)
+
+def download(ftp,files=[],destination=None):
     for file in files:
         try:
             if file not in os.listdir(destination) and file != "frep" and file != "input":    # Only downloads files that have not been previously downloaded. The frep and input files have been excluded since they give error due to lack of permission
@@ -32,7 +43,7 @@ def download(logger,ftp,files=[],destination=None):
         except Exception as e:
             logger.exception(f"Error while trying to download {file}: {e}")
 
-def move(logger,files=[],destination=None):
+def move(files=[],destination=None):
     for file in files:
         try:
             logger.info(f"Moving {file}...")
@@ -43,16 +54,6 @@ def move(logger,files=[],destination=None):
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
-
-    formatter = logging.Formatter("%(asctime)s : %(levelname)s - %(message)s")
-    
-    file_handler = logging.FileHandler(f"{SRC_FOLDER}/File Transfer.log")
-    file_handler.setFormatter(formatter)
-    
-    logger = logging.getLogger("AFT")
-    logger.addHandler(file_handler)
-
     try:
         file = open(f"{SRC_FOLDER}/settings.json")
         data = json.load(file)
@@ -72,6 +73,7 @@ def main():
 
     try:
         ftp = FTP(host,user,password)    # Connects to the FTP server
+        logger.info("Successfully connected to the FTP server.")
     except Exception as e:
         logger.exception(f"Failed to login: {e}")
         return
@@ -85,7 +87,7 @@ def main():
         logger.exception(f"Failed to retrieve list of files: {e}")
         return
 
-    download(logger,ftp,files,destination)
+    download(ftp,files,destination)
 
     try:
         ftp.quit()
@@ -94,7 +96,7 @@ def main():
         logger.exception("Failed to exit FTP server: {e}")
         return
 
-    move(logger,os.listdir(TEMP_FOLDER),destination)
+    move(os.listdir(TEMP_FOLDER),destination)
 
     try:
         os.removedirs(TEMP_FOLDER)    # Deletes temporary folder
@@ -102,7 +104,7 @@ def main():
     except Exception as e:
         logger.exception("Error deleting temporary folder: {e}")
 
-schedule.every().day.at("20:00").do(main)
+schedule.every().day.at(DAILY_TIME).do(main)
 
 while True:
     schedule.run_pending()
