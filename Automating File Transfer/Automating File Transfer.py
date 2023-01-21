@@ -25,7 +25,7 @@ SRC_FOLDER = f"{os.getcwd()}/src/"
 TEMP_FOLDER = f"{os.getcwd()}/.temp/"
 
 # Logger configuration
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG,format="%(asctime)s : %(levelname)s - %(message)s")
 
 file_handler = logging.FileHandler(f"{SRC_FOLDER}/File Transfer.log")
 file_handler.setFormatter(logging.Formatter("%(asctime)s : %(levelname)s - %(message)s"))
