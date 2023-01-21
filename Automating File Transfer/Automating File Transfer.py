@@ -102,9 +102,9 @@ def main():
         logger.info("Successfully removed temporary folder.")
     except Exception as e:
         logger.exception("Error deleting temporary folder: {e}")
-main()
-# schedule.every().day.at("20:00").do(main)
 
-# while True:
-#     schedule.run_pending()
-#     time.sleep(1)
+schedule.every().day.at("20:00").do(main)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
