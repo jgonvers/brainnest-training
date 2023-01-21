@@ -17,7 +17,6 @@ Here are the steps you can take to automate this process:
     You can also set up a log file to keep track of the files that have been transferred and any errors that may have occurred during the transfer process. '''
 
 from ftplib import FTP
-from datetime import datetime
 import os, shutil, schedule, time, json, logging
 
 TEMP_FOLDER = f"{os.getcwd()}/.temp/"
