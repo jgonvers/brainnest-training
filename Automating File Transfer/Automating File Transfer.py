@@ -22,9 +22,8 @@ from ftplib import FTP
 from datetime import datetime
 import os, shutil, schedule, time, json
 
-HOST = "ftp.dlptest.com"
 TEMP_FOLDER = f"{os.getcwd()}/.temp/"
-USER, PASSWORD = "dlpuser","rNrKYTX9g7z3RgJRmxWuGHbeu"    # Provided by the FTP server
+SETTINGS_LOCATION = f"{os.getcwd()}/src/settings.json"
 
 def download(ftp,log,files=[],destination=""):
     for file in files:
@@ -50,10 +49,16 @@ def move(log,files=[],destination=""):
             print(msg)
 
 def main():
-    file = open(f"{os.getcwd()}/src/settings.json")
-    destination = json.load(file)["DownloadFolder"] 
+    file = open(SETTINGS_LOCATION)
+    data = json.load(file)
 
-    ftp = FTP(HOST,USER,PASSWORD)    # Connects to the FTP server
+    host = data["Host"]
+    user = data["User"]
+    password = data["Password"]
+    destination = data["DownloadFolder"]
+
+
+    ftp = FTP(host,user,password)    # Connects to the FTP server
     
     log_location = f"{destination}/log.txt"
 

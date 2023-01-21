@@ -1,3 +1,6 @@
 {
-    "DownloadFolder":"\\\\server\\share"
+    "DownloadFolder":"\\\\server\\share",
+    "User":"dlpuser",
+    "Password":"rNrKYTX9g7z3RgJRmxWuGHbeu",
+    "Host":"ftp.dlptest.com"
 }
