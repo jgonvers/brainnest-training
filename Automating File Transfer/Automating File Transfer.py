@@ -16,70 +16,89 @@ Here are the steps you can take to automate this process:
 
     You can also set up a log file to keep track of the files that have been transferred and any errors that may have occurred during the transfer process. '''
 
-#TODO Add logger?
-
 from ftplib import FTP
 from datetime import datetime
-import os, shutil, schedule, time, json
+import os, shutil, schedule, time, json, logging
 
 TEMP_FOLDER = f"{os.getcwd()}/.temp/"
-SETTINGS_LOCATION = f"{os.getcwd()}/src/settings.json"
+SRC_FOLDER = f"{os.getcwd()}/src/"
 
-def download(ftp,log,files=[],destination=""):
+def download(logger,ftp,files=[],destination=None):
     for file in files:
         try:
-            if file not in os.listdir(destination):    # Only downloads files that have not been previously downloaded.
-                print(f"Downloading {file}...")
+            if file not in os.listdir(destination) and file != "frep" and file != "input":    # Only downloads files that have not been previously downloaded. The frep and input files have been excluded since they give error due to lack of permission
+                logger.info(f"Downloading {file}...")
                 ftp.retrbinary(f"RETR {file}",open(f"{TEMP_FOLDER}/{file}","wb").write)    # Downloads files from FTP server
-                log.write(f"Downloaded {file}.\n")
+                logger.info(f"Downloaded {file}.")
         except Exception as e:
-            msg = f"Error while trying to download {file}"
-            log.write(f"{msg} -> {e}\n")
-            print(msg)
+            logger.exception(f"Error while trying to download {file}: {e}")
 
-def move(log,files=[],destination=""):
+def move(logger,files=[],destination=None):
     for file in files:
         try:
-            print(f"Moving {file}...")
+            logger.info(f"Moving {file}...")
             shutil.move(f"{TEMP_FOLDER}/{file}",f"{destination}/{file}")    # Moves downloaded files from local storage to internal network folder
-            log.write(f"Moved {file}.\n")
+            logger.info(f"Moved {file}.")
         except Exception as e:
-            msg = f"Error moving {file}."
-            log.write(f"{msg} -> {e}")
-            print(msg)
+            logger.exception(f"Error moving {file}: {e}")
+
 
 def main():
-    file = open(SETTINGS_LOCATION)
-    data = json.load(file)
+    logging.basicConfig(level=logging.DEBUG)
 
-    host = data["Host"]
-    user = data["User"]
-    password = data["Password"]
-    destination = data["DownloadFolder"]
-
-
-    ftp = FTP(host,user,password)    # Connects to the FTP server
+    formatter = logging.Formatter("%(asctime)s : %(levelname)s - %(message)s")
     
-    log_location = f"{destination}/log.txt"
+    file_handler = logging.FileHandler(f"{SRC_FOLDER}/File Transfer.log")
+    file_handler.setFormatter(formatter)
+    
+    logger = logging.getLogger("AFT")
+    logger.addHandler(file_handler)
+
+    try:
+        file = open(f"{SRC_FOLDER}/settings.json")
+        data = json.load(file)
+
+        host = data["Host"]
+        user = data["User"]
+        password = data["Password"]
+        destination = data["DownloadFolder"]
+        
+        logger.info("Found settings file.")
+    except Exception as e:
+        logger.exception(f"Could not find settings file: {e}")
+        return
+
+    try:
+        ftp = FTP(host,user,password)    # Connects to the FTP server
+    except Exception as e:
+        logger.exception(f"Failed to login: {e}")
+        return
 
     if not os.path.exists(TEMP_FOLDER):    # Creates a temporary directory to store downloaded files while not finished
         os.makedirs(TEMP_FOLDER)
 
-    if not os.path.exists(log_location):    # Determines if the log will be created or simply updated
-        log = open(log_location,"w")
-    else:
-        log = open(log_location,"a")
+    try:
+        files = ftp.nlst()    # Creates a list of files available to download in the FTP server
+    except Exception as e:
+        logger.exception(f"Failed to retrieve list of files: {e}")
+        return
 
-    log.write(f"--> Start time: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n")    # Tracks every download instance
+    download(logger,ftp,files,destination)
 
-    files = ftp.nlst()    # Creates a list of files available to download in the FTP server
-    download(ftp,log,files,destination)
-    ftp.quit()
+    try:
+        ftp.quit()
+        logger.info("Successfully exited the FTP server.")
+    except Exception as e:
+        logger.exception("Failed to exit FTP server: {e}")
+        return
 
-    move(log,os.listdir(TEMP_FOLDER),destination)
-    log.close()
-    file.close()
-    os.removedirs(TEMP_FOLDER)    # Deletes temporary folder
+    move(logger,os.listdir(TEMP_FOLDER),destination)
+
+    try:
+        os.removedirs(TEMP_FOLDER)    # Deletes temporary folder
+        logger.info("Successfully removed temporary folder.")
+    except Exception as e:
+        logger.exception("Error deleting temporary folder: {e}")
 
 schedule.every().day.at("20:00").do(main)
 
