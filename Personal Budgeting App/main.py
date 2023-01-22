@@ -1,5 +1,3 @@
-from handlers import TransactionExpense, TransactionIncome
-
 import logging
 
 from GUI import BudgetApp
@@ -16,9 +14,7 @@ def main():
             app.start()
         except Exception as e:
             logger.error(e)
-            print(e)
-            # continue
-            break
+            continue
 
 
 if __name__ == "__main__":
