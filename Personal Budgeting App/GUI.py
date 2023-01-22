@@ -4,7 +4,7 @@ from datetime import datetime as dt
 from tkinter import *
 
 from settings import log_level
-from handlers import TransactionIncome, TransactionExpense, TransactionBudget
+from handlers import TransactionIncome, TransactionExpense, TransactionGoal
 
 logger = logging.getLogger("GUI")
 logger.setLevel(log_level)
@@ -17,7 +17,7 @@ class BudgetApp:
         self.window.geometry("500x500+150+150")
         self.income = TransactionIncome()
         self.expense = TransactionExpense()
-        self.budget = TransactionBudget()
+        self.budget = TransactionGoal()
 
         self.button_insert = Button(
             self.window,
@@ -62,7 +62,6 @@ class BudgetApp:
                 self.expense.create(transaction_data)
 
         def clear_transaction(event="clear_transaction"):
-            print(2)
             entry_type.delete(0, END)
             entry_amount.delete(0, END)
             entry_description.delete(0, END)
@@ -152,12 +151,13 @@ class BudgetApp:
         goal_window.geometry("400x280")
 
         def add_goal(event="add_goal"):
-            goal_data = {"amount": entry_amount.get(),
-                         "date": entry_date.get()}
+            goal_data = {
+                "amount": entry_amount.get(),
+                "date": dt.strptime(entry_date.get(), "%Y-%m-%d").date(),
+            }
             self.budget.create(goal_data)
 
         def clear_goal(event="clear_goal"):
-            print(2)
             entry_amount.delete(0, END)
             entry_date.delete(0, END)
 
