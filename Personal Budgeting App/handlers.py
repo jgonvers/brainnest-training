@@ -2,7 +2,7 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
-from database import Expense, Income, session
+from database import Budget, Expense, Income, session
 
 
 class DBTransaction:
@@ -41,6 +41,11 @@ class TransactionIncome(DBTransaction):
 class TransactionExpense(DBTransaction):
     def __init__(self, session: Session = session):
         super().__init__(Expense, session)
+
+
+class TransactionBudget(DBTransaction):
+    def __init__(self, session: Session = session):
+        super().__init__(Budget, session)
 
 
 if __name__ == "__main__":
