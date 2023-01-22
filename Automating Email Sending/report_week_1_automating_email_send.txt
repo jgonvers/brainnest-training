@@ -1,0 +1,238 @@
+Report `Automating Email Sending.py`
+
+#1 
+Imported the needed libraries used in this scripts.
+
+--- 1 --->
+import os
+import json
+import time
+import logging
+import schedule
+from smtplib import SMTP
+from datetime import datetime
+from email.message import EmailMessage
+import mimetypes
+<--- 1 ---
+
+
+#2 
+
+Define global variables, outside a function, to be accessible through all the script.
+
+	CWD -> Current working directory of type string
+	SRC_FOLDER -> Absolute source folder path defined concatenating the `CWD` variable with the string "src". The files `settings.json` and `Automatic Email.log` are inside the directory `src` in the current directory.
+	ATTACHMENT_FOLDER -> Absolute path of the directory where all the reports are in, named `Reports`.
+	FORMAT -> String variable to be used in the logging. Is composed by 3 attributes:
+		asctime -> Human readable time when the LogRecord was created.
+		levelname -> Text logging level for the message ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL').
+		message -> The logged message.
+	DAILY_TIME -> String variable with the time when the email will be sent on a daily basis.
+
+--- 2 --->
+CWD = os.getcwd()
+SRC_FOLDER =  (CWD, "src")
+ATTACHMENT_FOLDER = os.path.join(CWD, "Reports")
+FORMAT = "%(asctime)s : %(levelname)s - %(message)s"
+DAILY_TIME = "10:57"
+<--- 2 ---
+
+
+#3
+
+	logging.basicConfig(level=logging.DEBUG, format=FORMAT) -> Does basic configuration for the logging system by creating a StreamHandler with a default Formatter and adding it to the root logger.
+
+	file_handler -> Instance of the FileHandler class. The specified file in the logging.FileHandler() function, with basename `Automatic Email.log`, is opened in the default appending mode 'a', and used as the stream for logging.
+
+	file_handler.setFormatter(logging.Formatter(FORMAT)) -> Uses the global variable FORMAT so set the format in which the logging will be written in the file.
+
+	logger  = logging.getLogger("AES") -> The function logging.getLogger("AES") returns a logger with the name "AES" and saves it into the variable `logger`.
+
+	logger.addHandler(file_handler) -> Adds the specified handler, file_handler, to this logger.
+
+--- 3 --->
+logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+file_handler = logging.FileHandler(os.path.join(SRC_FOLDER, "Automatic Email.log"))
+file_handler.setFormatter(logging.Formatter(FORMAT))
+logger = logging.getLogger("AES")
+logger.addHandler(file_handler)
+<--- 3 ---
+
+
+#4
+
+A function named `create_email` is defined with 3 positional parameters of type string:
+	The subject of the email.
+	The sender's email address.
+	The receiver's email address. 
+And returns an entire message as string.
+
+A timestamp is created and saved to the variable `time_stamp` to keep record of the time when the email was created. 
+	datetime.now().strftime('%d/%m/%Y %H:%M:%S') -> returns a string with the current time in the format: 'day/month/year hour:minute:second'.
+
+	e = EmailMessage() -> Variable `e` is an object representing an email message. It works like a dictionary: 
+		e["To"] = receiver
+    		e["From"] = "Brainnest - Automatic Email Sending"
+    		e["Subject"] = subject
+
+	e.set_content(str) -> This method accepts string as input and sets it as the content of the email.
+
+Then, a `for` loop is used to iterate over the report files that will be attached to the email.
+	os.listdir(Path) -> is used to output a list of the files in the given Path, ATTACHMENT_FOLDER, explained above. It is the iterator of the loop.
+
+The `try` block is used to test the reading of the report files. If for a reason, one of the reports fails to be read, the `except` clause is executed and it writes a line of `error` level in the log file expliciting the exception occurred. 	
+
+	with open(os.path.join(ATTACHMENT_FOLDER, file), "rb") as f: -> The `with` statement is used with `open` function to open the file in binary format for reading, "rb". The file object is assigned to the variable `f`.
+
+	e.add_attachment() -> This method accepts attachment data as bytes, `f.read()`, along with their type and file name as input. 
+	
+	mime_type, _ = mimetypes.guess_type(file) -> The `guess_type` method returns a tuple of two values where the first value is MIME type and second value is file encoding. 
+
+The `mime_type` variable is a string of the format 'maintype/subtype'. The `split` method is used with separator '/' to get a list of these and apply them in the e.add_attachment() method.    
+
+	return e.as_string() -> returns intire message as string
+
+
+--- 4 --->
+def create_email(subject, sender, receiver):
+    time_stamp = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+
+    e = EmailMessage()
+    e["To"] = receiver
+    e["From"] = "Brainnest - Automatic Email Sending"
+    e["Subject"] = subject
+    e.set_content(f"""
+    This is an automatic email sent @ {time_stamp}.
+
+    This email was sent from {sender} to {receiver}
+
+    This email will be sent every 24 hours.
+    """)
+
+    for file in os.listdir(ATTACHMENT_FOLDER):    # Attaches all files
+        try:
+            mime_type, _ = mimetypes.guess_type(file)
+            mime_type = mime_type.split("/")
+            logger.debug(f"The main type and subtype of the file {file} are respectively: {mime_type}")
+            with open(os.path.join(ATTACHMENT_FOLDER, file), "rb") as f:
+                e.add_attachment(f.read(), maintype=mime_type[0],
+                                 subtype=mime_type[1], filename=file)
+                logger.info(f"{file} has been attached to the email.")
+        except Exception as ex:
+            logger.exception(f"Error attaching {file}: {ex}.")
+
+    return e.as_string()
+<--- 4 ---
+
+
+ #5
+
+A function named `send` is defined with 4 positional parameters:
+	The smtp, object from class SMTP.
+	The sender's email address.
+	The receiver's email address.
+	The email_obj, type string with the email message.
+Does not have a return value.
+
+It tries to send an email via the Simple Mail Transfer Protocol (SMTP) using smtplib library's `sendmail()` method.
+	smtp.sendmail(sender, receiver, email_obj) -> Sends email from `sender` email address to a list or string of receivers `receiver` with the content string `email_obj`.
+
+If mail sending fails to all addresses then it raises an error handled by the `except` block. Adding a line of level 'error' to the log file.
+
+
+--- 5 --->
+def send(smtp, sender, receiver, email_obj):
+    try:
+        smtp.sendmail(sender, receiver, email_obj)
+        logger.info(f"Email from {sender} has been sent to {receiver}")
+    except Exception as ex:
+        logger.exception(f"Email from {sender} was"
+                         f"not sent to {receiver}: {ex}.")
+<--- 5 ---
+
+
+#6
+
+The main function is defined.
+
+	 with SMTP("smtp.gmail.com", 587) as smtp: -> Using SMTP_SSL as context manager so it does not need to call quit() method to close the connection, with hostname "smtp.gmail.com" and port "587". Assigns an instance of SMTP_SSL to variable `smtp`.
+
+	Tries to start TLS, Transport Layer Security:
+		smtp.starttls() -> Put the SMTP connection in TLS (Transport Layer Security) mode. All SMTP commands that follow will be encrypted.
+	If it fails to start TLS it writes a message in the log file with level `error`.
+
+	with open(os.path.join(SRC_FOLDER, "settings.json"), "r") as rf: -> Tries to open the `settings.json` file in read mode, assigns the file instance to variable `rf`. 
+	Then, json.load() methos takes the file object, `rf`, returns a dictionary and saves the data to variable `data`:
+		data = json.load(rf)
+	
+	If it fails to read the jason file, an exception is captured by the `except` block and writes a message in the log file.
+
+	The sender's email, respective password and receiver's email list are assigned to the sender_email, sender_password and receiver_list variables, respectively. This is done making use of the `data` dictionary.
+
+	The sender's and receiver's email addresses are logged for debugging reasons.
+
+	smtp.login(sender_email, sender_password) -> Inside the `try` block, the method `login()` is used to login into the sender's email account using the password in variable `sender_password`.
+	If it fails, an error message is appended to the log file.
+
+	subject = "Automatic mail." -> The email subject is assigned to variable `subject`
+
+	A `for` loop is used to iterate through the receiver's email list to send an individual email for each of them.
+		
+		email_obj = create_email(subject, sender_email, receiver) -> The email is created calling the above mentioned function and the return string is assigned to variable `email_obj`.
+
+		send(smtp, sender_email, receiver, email_obj) -> The `send` function is used to send the email.
+
+
+--- 6 ---> 
+def main():
+    with SMTP("smtp.gmail.com", 587) as smtp:
+        try:
+            smtp.starttls()
+            logger.info("Successfully started TLS.")
+        except Exception as ex:
+            logger.exception("Error starting TLS: {ex}.")
+
+        try:
+            with open(os.path.join(SRC_FOLDER, "settings.json"), "r") as rf:
+                data = json.load(rf)
+                logger.info("Successfully loaded settings.")
+        except Exception as ex:
+            logger.exception("Error while opening settings.json: {ex}")
+
+        sender_email = data["SenderEmail"]
+        sender_password = data["SenderPassword"]
+        receiver_list = data["ReceiverList"]
+
+        logger.debug(f"The sender email is: {sender_email}")
+        logger.debug(f"The receiver's email list is: {receiver_list}")
+
+        try:
+            smtp.login(sender_email, sender_password)
+            logger.info("Successfully logged into SMTP server.")
+        except Exception as ex:
+            logger.exception(f"Could NOT login to email {sender_email}: {ex}.")
+
+        subject = "Automatic mail."
+        for receiver in receiver_list:
+            email_obj = create_email(subject, sender_email, receiver)
+            send(smtp, sender_email, receiver, email_obj)
+<--- 6 ---
+
+
+#7
+
+	schedule.every().day.at(DAILY_TIME).do(main) -> `schedule` library is used to set a daily run of the function `main()` at the time defined in the variable `DAILY_TIME`
+
+	The `while` loop is used with a condition that is always true, `True` value, so it never ends.
+		schedule.run_pending() -> The method `run_pending()` runs all jobs that are scheduled to run.
+		time.sleep(1) -> Pauses the program by 1 second and then the `while` loop continues to check if there are scheduled jobs to run.
+
+--- 7 ---> 
+schedule.every().day.at(DAILY_TIME).do(main)
+
+while True:
+    schedule.run_pending() 
+    time.sleep(1)
+<--- 7 ---
+
+
