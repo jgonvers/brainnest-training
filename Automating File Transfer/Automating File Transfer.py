@@ -16,19 +16,21 @@
 
     You can also set up a log file to keep track of the files that have been transferred and any errors that may have occurred during the transfer process. '''
 
-from ftplib import FTP
-import json
-import logging
 import os
-import schedule
-import shutil
+import json
 import time
+import shutil
+import logging
+import schedule
+from ftplib import FTP
 
+# Global Constants
 DAILY_TIME = "20:00"
 SRC_FOLDER = os.path.join(os.getcwd(), "src")
 TEMP_FOLDER = os.path.join(os.getcwd(), ".temp")
 FORMAT = "%(asctime)s : %(levelname)s - %(message)s"
 
+# Logger Configuration
 logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 
 file_handler = logging.FileHandler(os.path.join(SRC_FOLDER,
@@ -40,6 +42,15 @@ logger.addHandler(file_handler)
 
 
 def download(ftp, files=[], downloaded_files=[]):
+    '''
+    Downloads the files that have not been previoulsy downloaded.
+            Parameters:
+                    ftp: The object that stores the FTP server
+                    files (list): The files that are available to download
+                    downloaded_files (list): Previously downloaded files
+            Returns:
+                   None
+    '''
     for file in files:
         try:
             if file not in downloaded_files and file not in ("frep", "input"):
@@ -53,9 +64,18 @@ def download(ftp, files=[], downloaded_files=[]):
 
 
 def move(destination, files=[]):
+    '''
+    Moves the files from the temporary folder to its final destination.
+            Parameters:
+                    destination (str): The path to the destination folder
+                    files (list): The files that need to be moved
+            Returns:
+                    None
+    '''
     for file in files:
         try:
             logger.info(f"Moving {file}...")
+            # Moves the files
             shutil.move(os.path.join(TEMP_FOLDER, file),
                         os.path.join(destination, file))
             logger.info(f"Moved {file}.")
@@ -65,33 +85,38 @@ def move(destination, files=[]):
 
 def main():
     try:
-        file = open(os.path.join(SRC_FOLDER, "settings.json"))
-        data = json.load(file)
+        # Get settings from settings.json file
+        with open(os.path.join(SRC_FOLDER, "settings.json"), "r") as file:
+            data = json.load(file)
 
-        host = data["Host"]
-        user = data["User"]
-        password = data["Password"]
-        destination = data["DownloadFolder"]
+            host = data["Host"]
+            user = data["User"]
+            password = data["Password"]
+            destination = data["DownloadFolder"]
 
         logger.info("Found settings file.")
     except Exception as e:
         logger.exception(f"Could not find settings file: {e}")
         return
 
+    # Creates destination folder
     if not os.path.exists(destination):
         os.makedirs(destination)
 
     try:
+        # Establishes connection to FTP server
         ftp = FTP(host, user, password)
         logger.info("Successfully connected to the FTP server.")
     except Exception as e:
         logger.exception(f"Failed to login: {e}")
         return
 
+    # Creates temporary folder
     if not os.path.exists(TEMP_FOLDER):
         os.makedirs(TEMP_FOLDER)
 
     try:
+        # Get the list of all files available to download in FTP server
         files = ftp.nlst()
     except Exception as e:
         logger.exception(f"Failed to retrieve list of files: {e}")
@@ -109,6 +134,7 @@ def main():
     move(destination, os.listdir(TEMP_FOLDER))
 
     try:
+        # Deletes temporary folder
         os.removedirs(TEMP_FOLDER)
         logger.info("Successfully removed temporary folder.")
     except Exception as e:
