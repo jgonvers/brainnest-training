@@ -54,6 +54,8 @@ class TransactionGoal(DBTransaction):
 
 
 if __name__ == "__main__":
+    """Test"""
+    goal = TransactionGoal()
     income = TransactionIncome()
     expense = TransactionExpense()
     income.create(
