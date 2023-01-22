@@ -23,11 +23,11 @@ class BudgetApp:
             self.window,
             text="Insert",
             width=15,
-            font=(14),
+            font=14,
             bg="green",
             fg="white",
             bd=2,
-            command=self.transaction(),
+            command=self.transaction,
         )
         self.button_insert.grid(row=1, column=1)
         self.button_set_goal = Button(
@@ -36,9 +36,9 @@ class BudgetApp:
             width=20,
             bg="orange",
             fg="white",
-            font=(10),
+            font=10,
             bd=2,
-            command=self.goal(),
+            command=self.goal,
         )
         self.button_set_goal.grid(row=1, column=2)
 
@@ -47,7 +47,7 @@ class BudgetApp:
         new_window.title("data entry")
         new_window.geometry("400x280")
 
-        def add_transaction(event="add_transaction"):
+        def add_transaction():
             transaction_data = {}
             transaction_type = entry_type.get()
             transaction_data["amount"] = entry_amount.get()
@@ -61,7 +61,7 @@ class BudgetApp:
             elif transaction_type.lower() == "expense":
                 self.expense.create(transaction_data)
 
-        def clear_transaction(event="clear_transaction"):
+        def clear_transaction():
             entry_type.delete(0, END)
             entry_amount.delete(0, END)
             entry_description.delete(0, END)
@@ -72,11 +72,11 @@ class BudgetApp:
             text="Please enter data then press add",
             bg="red",
             fg="white",
-            font=(4),
+            font=4,
         )
         label_main.grid(row=1, column=1, columnspan=2)
         label_type = Label(
-            new_window, text="type", width=15, bg="white", fg="black", font=(3)
+            new_window, text="type", width=15, bg="white", fg="black", font=3
         )
         label_type.grid(row=2, column=1)
         label_amount = Label(
@@ -85,7 +85,7 @@ class BudgetApp:
             width=15,
             bg="grey",
             fg="black",
-            font=(3),
+            font=3,
         )
         label_amount.grid(row=3, column=1)
         label_description = Label(
@@ -94,34 +94,32 @@ class BudgetApp:
             width=15,
             bg="white",
             fg="black",
-            font=(3),
+            font=3,
         )
         label_description.grid(row=4, column=1)
         label_date = Label(
-            new_window, text="date", width=15, bg="grey", fg="black", font=(3)
+            new_window, text="date", width=15, bg="grey", fg="black", font=3
         )
         label_date.grid(row=5, column=1)
         entry_type = Entry(
-            new_window, width=15, bg="white", fg="black", font=(3)
+            new_window, width=15, bg="white", fg="black", font=3
         )
         entry_type.grid(row=2, column=2)
         entry_amount = Entry(
-            new_window, width=15, bg="grey", fg="black", font=(3)
+            new_window, width=15, bg="grey", fg="black", font=3
         )
         entry_amount.grid(row=3, column=2)
         entry_description = Entry(
-            new_window, width=15, bg="white", fg="black", font=(3)
+            new_window, width=15, bg="white", fg="black", font=3
         )
         entry_description.grid(row=4, column=2)
-        entry_date = Entry(
-            new_window, width=15, bg="grey", fg="black", font=(3)
-        )
+        entry_date = Entry(new_window, width=15, bg="grey", fg="black", font=3)
         entry_date.grid(row=5, column=2)
         button_add = Button(
             new_window,
             text="Add",
             width=10,
-            font=(4),
+            font=4,
             bg="yellow",
             fg="black",
             bd=2,
@@ -132,7 +130,7 @@ class BudgetApp:
             new_window,
             text="Clear",
             width=10,
-            font=(4),
+            font=4,
             bg="orange",
             fg="black",
             bd=2,
@@ -150,14 +148,14 @@ class BudgetApp:
         goal_window.title("set goals")
         goal_window.geometry("400x280")
 
-        def add_goal(event="add_goal"):
+        def add_goal():
             goal_data = {
                 "amount": entry_amount.get(),
                 "date": dt.strptime(entry_date.get(), "%Y-%m-%d").date(),
             }
             self.goal.create(goal_data)
 
-        def clear_goal(event="clear_goal"):
+        def clear_goal():
             entry_amount.delete(0, END)
             entry_date.delete(0, END)
 
@@ -166,7 +164,7 @@ class BudgetApp:
             text="Please enter data then press add",
             bg="red",
             fg="white",
-            font=(4),
+            font=4,
         )
         label_main.grid(row=1, column=1, columnspan=2)
         label_amount = Label(
@@ -175,26 +173,26 @@ class BudgetApp:
             width=15,
             bg="grey",
             fg="black",
-            font=(3),
+            font=3,
         )
         label_amount.grid(row=2, column=1)
         label_date = Label(
-            goal_window, text="date", width=15, bg="grey", fg="black", font=(3)
+            goal_window, text="date", width=15, bg="grey", fg="black", font=3
         )
         label_date.grid(row=3, column=1)
         entry_amount = Entry(
-            goal_window, width=15, bg="grey", fg="black", font=(3)
+            goal_window, width=15, bg="grey", fg="black", font=3
         )
         entry_amount.grid(row=2, column=2)
         entry_date = Entry(
-            goal_window, width=15, bg="grey", fg="black", font=(3)
+            goal_window, width=15, bg="grey", fg="black", font=3
         )
         entry_date.grid(row=3, column=2)
         button_add = Button(
             goal_window,
             text="Add",
             width=10,
-            font=(4),
+            font=4,
             bg="yellow",
             fg="black",
             bd=2,
@@ -205,7 +203,7 @@ class BudgetApp:
             goal_window,
             text="Clear",
             width=10,
-            font=(4),
+            font=4,
             bg="orange",
             fg="black",
             bd=2,
