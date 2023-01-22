@@ -17,7 +17,7 @@ class BudgetApp:
         self.window.geometry("500x500+150+150")
         self.income = TransactionIncome()
         self.expense = TransactionExpense()
-        self.budget = TransactionGoal()
+        self.goal = TransactionGoal()
 
         self.button_insert = Button(
             self.window,
@@ -155,7 +155,7 @@ class BudgetApp:
                 "amount": entry_amount.get(),
                 "date": dt.strptime(entry_date.get(), "%Y-%m-%d").date(),
             }
-            self.budget.create(goal_data)
+            self.goal.create(goal_data)
 
         def clear_goal(event="clear_goal"):
             entry_amount.delete(0, END)
