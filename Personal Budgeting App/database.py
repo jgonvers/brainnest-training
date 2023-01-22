@@ -74,13 +74,12 @@ class Expense(Transaction):
     )
 
 
-class Budget(Base):
-    __tablename__ = "budgets"
+class Goal(Base):
+    __tablename__ = "goals"
 
     id = Column(Integer, primary_key=True)
     amount = Column(Float, nullable=False)
-    start_date = Column(Date, nullable=False)
-    end_date = Column(Date, nullable=False)
+    date = Column(Date, nullable=False)
 
     __table_args__ = (
         CheckConstraint(amount > 0, name="check_amount_positive"),
