@@ -16,9 +16,14 @@ from sqlalchemy.orm import Session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import IntegrityError
 
-from settings import db_settings
+from settings import db_settings, db_echo, log_level
+import logging
 
-engine = create_engine(db_settings.db_url, echo=True)
+logger = logging.getLogger("database")
+logger.setLevel(log_level)
+
+
+engine = create_engine(db_settings.db_url, echo=db_echo)
 Base = declarative_base()
 session = Session(engine)
 

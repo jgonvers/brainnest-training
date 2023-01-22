@@ -3,8 +3,10 @@ from datetime import date
 from sqlalchemy.orm import Session
 
 from database import Expense, Income, session
-
-
+from settings import log_level
+import logging
+logger = logging.getLogger("handler")
+logger.setLevel(log_level)
 class DBTransaction:
     def __init__(self, model: Income | Expense, session: Session = session):
         self.session = session
