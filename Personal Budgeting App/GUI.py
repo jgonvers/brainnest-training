@@ -3,12 +3,13 @@ import logging
 from tkinter import *
 
 from settings import log_level
+
 logger = logging.getLogger("GUI")
 logger.setLevel(log_level)
 
-win=Tk()
-win.geometry('500x500+150+150')
-win.title('budgeting app')
+win = Tk()
+win.geometry("500x500+150+150")
+win.title("budgeting app")
 
 
 def func1():
