@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from settings import log_level
 from database import Goal, Expense, Income, session
+from random import randint
 
 logger = logging.getLogger("handler")
 logger.setLevel(log_level)
@@ -51,10 +52,39 @@ class TransactionExpense(DBTransaction):
 class TransactionGoal(DBTransaction):
     def __init__(self, session: Session = session):
         super().__init__(Goal, session)
-
+        
+def fill_db(n=10000):
+    year = 2022
+    n_day = 365
+    income = TransactionIncome()
+    expense = TransactionExpense()
+    #empty
+    income.delete_all()
+    expense.delete_all()
+    
+    ordinal_start = date(2022,1,1).toordinal()
+    logger.info("start generating random data")
+    for x in range(n):
+        logger.info(f"data {x}")
+        day = ordinal_start+randint(0,n_day-1)
+        amount = randint(-500,500)
+        if amount > 0:
+            income.create({
+                "amount":amount,
+                "description": f"description {x}",
+                "date": date.fromordinal(day),
+            })
+        elif amount < 0:
+            expense.create({
+                "amount":-amount,
+                "description": f"description {x}",
+                "date": date.fromordinal(day),
+            })
 
 if __name__ == "__main__":
     """Test"""
+    fill_db()
+    exit()
     goal = TransactionGoal()
     income = TransactionIncome()
     expense = TransactionExpense()
@@ -79,11 +109,25 @@ if __name__ == "__main__":
             "date": date(2021, 2, 1),
         }
     )
+    income.create(
+        {
+            "amount": 100,
+            "description": "test_income_2",
+            "date": date(2023, 2, 1),
+        }
+    )
     expense.create(
         {
             "amount": 100,
             "description": "test_expense_2",
             "date": date(2021, 2, 1),
+        }
+    )
+    expense.create(
+        {
+            "amount": 100,
+            "description": "test_expense_2",
+            "date": date(2022, 2, 1),
         }
     )
     print(income.get(id=1).description)
@@ -94,7 +138,3 @@ if __name__ == "__main__":
     print(expense.get(id=1).description)
     print(income.get_all())
     print(expense.get_all())
-    income.delete(id=1)
-    expense.delete(id=1)
-    income.delete_all()
-    expense.delete_all()

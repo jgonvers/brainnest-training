@@ -40,6 +40,13 @@ class Transaction(Base):
         CheckConstraint(amount > 0, name="check_amount_positive"),
     )
 
+    def to_dict(self):
+        return({
+            "id":self.id,
+            "amount":self.amount,
+            "description":self.description,
+            "date":self.date})
+
 
 class TransactionType(Base):
     __tablename__ = "transaction_types"
@@ -60,6 +67,10 @@ class Income(Transaction):
         default=1,
         nullable=False,
     )
+    def to_dict(self):
+        dic = super().to_dict()
+        dic['table'] = "Income"
+        return(dic)
 
 
 class Expense(Transaction):
@@ -72,6 +83,12 @@ class Expense(Transaction):
         default=2,
         nullable=False,
     )
+
+    def to_dict(self):
+        dic = super().to_dict()
+        dic['amount'] = -dic['amount']
+        dic['table'] = "Expense"
+        return(dic)
 
 
 class Goal(Base):
