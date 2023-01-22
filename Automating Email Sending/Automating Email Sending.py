@@ -27,6 +27,7 @@ CWD = os.getcwd()
 SRC_FOLDER = os.path.join(CWD, "src")
 ATTACHMENT_FOLDER = os.path.join(CWD, "Reports")
 FORMAT = "%(asctime)s : %(levelname)s - %(message)s"
+DAILY_TIME = "10:57"
 
 logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 
@@ -59,8 +60,8 @@ def create_email(subject, sender, receiver):
                 e.add_attachment(f.read(), maintype='application',
                                  subtype="txt", filename=file)
                 logger.info(f"{file} has been attached to the email.")
-        except Exception as e:
-            logger.exception(f"Error attaching {file}: {e}.")
+        except Exception as ex:
+            logger.exception(f"Error attaching {file}: {ex}.")
 
     return e.as_string()
 
@@ -69,9 +70,9 @@ def send(smtp, sender, receiver, email_obj):
     try:
         smtp.sendmail(sender, receiver, email_obj)
         logger.info(f"Email from {sender} has been sent to {receiver}")
-    except Exception as e:
+    except Exception as ex:
         logger.exception(f"Email from {sender} was"
-                         f"not sent to {receiver}: {e}.")
+                         f"not sent to {receiver}: {ex}.")
 
 
 def main():
@@ -79,34 +80,35 @@ def main():
         try:
             smtp.starttls()
             logger.info("Successfully started TLS.")
-        except Exception as e:
-            logger.exception("Error starting TLS: {e}.")
+        except Exception as ex:
+            logger.exception("Error starting TLS: {ex}.")
 
         try:
-            file = open(os.path.join(SRC_FOLDER, "settings.json"))
-            data = json.load(file)
-            file.close()
-            logger.info("Successfully loaded settings.")
-        except Exception as e:
-            logger.exception("Error while opening settings.json: {e}")
+            with open(os.path.join(SRC_FOLDER, "settings.json"), "r") as rf:
+                data = json.load(rf)
+                logger.info("Successfully loaded settings.")
+        except Exception as ex:
+            logger.exception("Error while opening settings.json: {ex}")
 
         sender_email = data["SenderEmail"]
         sender_password = data["SenderPassword"]
         receiver_list = data["ReceiverList"]
 
+        logger.debug(f"The sender email is: {sender_email}")
+        logger.debug(f"The receiver's email list is: {receiver_list}")
+
         try:
             smtp.login(sender_email, sender_password)
             logger.info("Successfully logged into SMTP server.")
-        except Exception as e:
-            logger.exception(f"Could NOT login to email {sender_email}: {e}.")
+        except Exception as ex:
+            logger.exception(f"Could NOT login to email {sender_email}: {ex}.")
 
+        subject = "Automatic mail."
         for receiver in receiver_list:
-            subject = "Automatic mail."
             email_obj = create_email(subject, sender_email, receiver)
             send(smtp, sender_email, receiver, email_obj)
 
-
-schedule.every().day.at("15:32").do(main)
+schedule.every().day.at(DAILY_TIME).do(main)
 
 while True:
     schedule.run_pending()
