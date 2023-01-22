@@ -4,7 +4,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 
 from settings import log_level
-from database import Budget, Expense, Income, session
+from database import Goal, Expense, Income, session
 
 logger = logging.getLogger("handler")
 logger.setLevel(log_level)
@@ -48,9 +48,9 @@ class TransactionExpense(DBTransaction):
         super().__init__(Expense, session)
 
 
-class TransactionBudget(DBTransaction):
+class TransactionGoal(DBTransaction):
     def __init__(self, session: Session = session):
-        super().__init__(Budget, session)
+        super().__init__(Goal, session)
 
 
 if __name__ == "__main__":
