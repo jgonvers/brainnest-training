@@ -52,34 +52,40 @@ class TransactionExpense(DBTransaction):
 class TransactionGoal(DBTransaction):
     def __init__(self, session: Session = session):
         super().__init__(Goal, session)
-        
+
+
 def fill_db(n=10000):
     year = 2022
     n_day = 365
     income = TransactionIncome()
     expense = TransactionExpense()
-    #empty
+    # empty
     income.delete_all()
     expense.delete_all()
-    
-    ordinal_start = date(2022,1,1).toordinal()
+
+    ordinal_start = date(2022, 1, 1).toordinal()
     logger.info("start generating random data")
     for x in range(n):
         logger.info(f"data {x}")
-        day = ordinal_start+randint(0,n_day-1)
-        amount = randint(-500,500)
+        day = ordinal_start + randint(0, n_day - 1)
+        amount = randint(-500, 500)
         if amount > 0:
-            income.create({
-                "amount":amount,
-                "description": f"description {x}",
-                "date": date.fromordinal(day),
-            })
+            income.create(
+                {
+                    "amount": amount,
+                    "description": f"description {x}",
+                    "date": date.fromordinal(day),
+                }
+            )
         elif amount < 0:
-            expense.create({
-                "amount":-amount,
-                "description": f"description {x}",
-                "date": date.fromordinal(day),
-            })
+            expense.create(
+                {
+                    "amount": -amount,
+                    "description": f"description {x}",
+                    "date": date.fromordinal(day),
+                }
+            )
+
 
 if __name__ == "__main__":
     """Test"""

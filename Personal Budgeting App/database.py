@@ -41,11 +41,12 @@ class Transaction(Base):
     )
 
     def to_dict(self):
-        return({
-            "id":self.id,
-            "amount":self.amount,
-            "description":self.description,
-            "date":self.date})
+        return {
+            "id": self.id,
+            "amount": self.amount,
+            "description": self.description,
+            "date": self.date,
+        }
 
 
 class TransactionType(Base):
@@ -67,10 +68,11 @@ class Income(Transaction):
         default=1,
         nullable=False,
     )
+
     def to_dict(self):
         dic = super().to_dict()
-        dic['table'] = "Income"
-        return(dic)
+        dic["table"] = "Income"
+        return dic
 
 
 class Expense(Transaction):
@@ -86,9 +88,9 @@ class Expense(Transaction):
 
     def to_dict(self):
         dic = super().to_dict()
-        dic['amount'] = -dic['amount']
-        dic['table'] = "Expense"
-        return(dic)
+        dic["amount"] = -dic["amount"]
+        dic["table"] = "Expense"
+        return dic
 
 
 class Goal(Base):
