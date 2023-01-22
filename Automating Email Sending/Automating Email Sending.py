@@ -22,6 +22,7 @@ import schedule
 from smtplib import SMTP
 from datetime import datetime
 from email.message import EmailMessage
+import mimetypes
 
 # Global Constants
 CWD = os.getcwd()
@@ -29,6 +30,7 @@ DAILY_TIME = "10:57"
 SRC_FOLDER = os.path.join(CWD, "src")
 ATTACHMENT_FOLDER = os.path.join(CWD, "Reports")
 FORMAT = "%(asctime)s : %(levelname)s - %(message)s"
+DAILY_TIME = "19:56"
 
 # Logger configuration
 logging.basicConfig(level=logging.DEBUG, format=FORMAT)
@@ -71,9 +73,12 @@ def create_email(subject, sender, receiver):
     # Attaching files
     for file in os.listdir(ATTACHMENT_FOLDER):
         try:
+            mime_type, _ = mimetypes.guess_type(file)
+            mime_type = mime_type.split("/")
+            logger.debug(f"The main type and subtype of the file {file} are respectively: {mime_type}")
             with open(os.path.join(ATTACHMENT_FOLDER, file), "rb") as f:
-                e.add_attachment(f.read(), maintype='application',
-                                 subtype="txt", filename=file)
+                e.add_attachment(f.read(), maintype=mime_type[0],
+                                 subtype=mime_type[1], filename=file)
                 logger.info(f"{file} has been attached to the email.")
         except Exception as ex:
             logger.exception(f"Error attaching {file}: {ex}.")

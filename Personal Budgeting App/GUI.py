@@ -155,7 +155,7 @@ class BudgetApp:
 
     def generate_plot(self) -> str:
         file_path = self.plotter.generate_bar_plot(
-            1000, 800, by="day", width=10
+            1000, 800, by="month", width=10
         )
         new_window = tk.Toplevel()
         label = tk.Label(new_window, text="Plot")
