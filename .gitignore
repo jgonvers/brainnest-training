@@ -142,3 +142,4 @@ data/
 .DS_Store
 
 *.db
+*.png
