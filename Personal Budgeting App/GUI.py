@@ -1,20 +1,15 @@
+import logging
+
 from tkinter import *
 
-<<<<<<< HEAD
-win = Tk()
-win.geometry("500x500+150+150")
-win.title("budgeting app")
-
-=======
 from settings import log_level
-import logging
 logger = logging.getLogger("GUI")
 logger.setLevel(log_level)
 
 win=Tk()
 win.geometry('500x500+150+150')
 win.title('budgeting app')
->>>>>>> 1d15d136dd19015ee04d414e8586c2581dbba0c4
+
 
 def func1():
     newWindow = Toplevel(win)
