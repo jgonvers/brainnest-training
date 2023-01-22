@@ -27,7 +27,7 @@ class BudgetApp:
             bg="green",
             fg="white",
             bd=2,
-            command=self.transaction,
+            command=self.transaction(),
         )
         self.button_insert.grid(row=1, column=1)
         self.button_set_goal = Button(
@@ -38,7 +38,7 @@ class BudgetApp:
             fg="white",
             font=10,
             bd=2,
-            command=self.goal,
+            command=self.transaction_goal(),
         )
         self.button_set_goal.grid(row=1, column=2)
 
@@ -143,7 +143,7 @@ class BudgetApp:
         entry_date.bind("<Return>", lambda event: button_add.focus())
         button_add.bind("<Return>", add_transaction)
 
-    def goal(self):
+    def transaction_goal(self):
         goal_window = Toplevel(self.window)
         goal_window.title("set goals")
         goal_window.geometry("400x280")
