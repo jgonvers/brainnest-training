@@ -1,5 +1,6 @@
 {
-    "SenderEmail":"matheuspedreiira@gmail.com",
-    "SenderPassword":"txkrifjbnxzyrnmz",
-    "ReceiverList":["mpsfranca@outlook.com.br"]
+    "SenderEmail":"sender_email",
+    "SenderPassword":"sender_password",
+    "ReceiverList":["hecaroc690@moneyzon.com",
+                    "sevod30840@minterp.com"]
 }
