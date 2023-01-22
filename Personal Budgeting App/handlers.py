@@ -1,8 +1,13 @@
+import logging
 from datetime import date
 
 from sqlalchemy.orm import Session
 
+from settings import log_level
 from database import Budget, Expense, Income, session
+
+logger = logging.getLogger("handler")
+logger.setLevel(log_level)
 
 
 class DBTransaction:
