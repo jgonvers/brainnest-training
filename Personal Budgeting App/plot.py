@@ -20,9 +20,9 @@ class Plotter:
         self.income = TransactionIncome()
         self.expense = TransactionExpense()
         self.goal = TransactionGoal()
-        self.temp_dir = join(gettempdir(), "budgetingapp")
-        if not exists(self.temp_dir):
-            makedirs(self.temp_dir)
+        # self.temp_dir = join(gettempdir(), "budgetingapp")
+        # if not exists(self.temp_dir):
+        #     makedirs(self.temp_dir)
 
     def generate_bar_plot(
         self, size_x=500, size_y=500, by="day", window=None, width=10
@@ -31,7 +31,7 @@ class Plotter:
         dpi = 100
         figsize = (size_x / dpi, size_y / dpi)
 
-        ##modify if adding an windows (from x to y )
+        # modify if adding an windows (from x to y )
         if window is None or True:
             income = list(map(lambda x: x.to_dict(), self.income.get_all()))
             expense = list(map(lambda x: x.to_dict(), self.expense.get_all()))
@@ -69,9 +69,10 @@ class Plotter:
         ax.set_xlabel("Date")
         ax.legend()
         ax.xaxis_date()
-        location = join(
-            self.temp_dir, "figure{}.png".format(randrange(int(1e20)))
-        )
+        # location = join(
+        #     self.temp_dir, "figure{}.png".format(randrange(int(1e20)))
+        # )
+        location = "figure.png"
         plt.savefig(location)
         return location
 
@@ -83,10 +84,12 @@ class Plotter:
             )
         )
 
-    def _create_frame(self, transactions_list):
+    @staticmethod
+    def _create_frame(transactions_list):
         return pd.DataFrame.from_dict(transactions_list)
 
-    def _sum_by(self, dict_list, by="day"):
+    @staticmethod
+    def _sum_by(dict_list, by="day"):
         if by == "month":
             format = "%Y-%m"
         elif by == "year":
