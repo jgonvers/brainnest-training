@@ -49,7 +49,23 @@ class Weather():
             target_list[x][key] = iter[x]
     
     def convert_wind_direction(self,angle):
-        return(angle)
+        inc = 360/16
+        if angle <= 1*inc and angle > 15*inc:
+            return("North")
+        elif angle <= 3*inc:
+            return("North-East")
+        elif angle <= 5*inc:
+            return("East")
+        elif angle <= 7*inc:
+            return("South-East")
+        elif angle <= 9*inc:
+            return("South")
+        elif angle <= 11*inc:
+            return("South-West")
+        elif angle <= 13*inc:
+            return("West")
+        elif angle <= 15*inc:
+            return ("North-West")
     
     def convert_wmo(self, code):
         match code:
