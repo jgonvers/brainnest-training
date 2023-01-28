@@ -16,8 +16,11 @@ class Weather():
     
     def get_weather(self, location, start_date, end_date):
         location = self._get_location(location)
-        weather = self._get_weather_data(location["coordinate"], start_date, end_date)
-        return({"location" : location["location"], "data" : weather})
+        if location is not False:
+            weather = self._get_weather_data(location["coordinate"], start_date, end_date)
+            return({"location" : location["location"], "data" : weather})
+        else:
+            return({"location": "Not Found", "data": None})
     
     def _get_location(self, location):
         payload = {
@@ -26,6 +29,8 @@ class Weather():
             "auth":self.geocode_API_key
             }
         r = requests.get(self.geocode_API_url,params=payload)
+        if "matches" in r.json() and r.json()["matches"] == None:
+            return(False)
         return(wu.parse_location(r.json()))
         
     def _get_weather_data(self, coordinate, start_date, end_date):
@@ -49,9 +54,13 @@ class Weather():
 
 if __name__ == "__main__":
     w = Weather()
-    r = w.get_weather("moow", "2023-01-26", "2023-01-27")
-    print(r['location'])
+    
+    for loc in ["zürich", "zurich", "kljfdsklfsdjkfd"]:
+        print(loc)
+        r = w.get_weather(loc, "2023-01-26", "2023-01-27")
+        print(r['location'])
+        if r['location'] != "Not Found":
+            for x in r['data']:
+                for y in x:
+                    print(y)
 
-    for x in r['data']:
-        for y in x:
-            print(y)
