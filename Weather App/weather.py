@@ -6,8 +6,7 @@ except ImportError:
     collections.MutableMapping = collections.abc.MutableMapping
     import requests
     
-from datetime import datetime
-
+    from weather_utils import WeatherUtils as wu
 
 class Weather():
     weather_API_url = "https://api.open-meteo.com/v1/forecast"
@@ -27,12 +26,7 @@ class Weather():
             "auth":self.geocode_API_key
             }
         r = requests.get(self.geocode_API_url,params=payload)
-        return(self._parse_location(r.json()))
-    
-    def _parse_location(self, data):
-        coordinate = (data["latt"], data["longt"])
-        location = f'{data["standard"]["city"]}, {data["standard"]["countryname"]}'
-        return {"coordinate":coordinate, "location":location}
+        return(wu.parse_location(r.json()))
         
     def _get_weather_data(self, coordinate, start_date, end_date):
         weather_payload = { "timezone":"auto",
@@ -46,77 +40,16 @@ class Weather():
         r = requests.get(self.weather_API_url, params=weather_payload)
 
         if r.status_code == 200:
-            return(self._json_convert(r.json()))
-        else: #error handling    ["current_weather"]  ["daily"]
+            return(wu.json_convert(r.json()))
+        else: #error handling
             if r.status_code == 400:
                 return(r.json()["reason"])
             else:
                 return(f"HTML Error {r.status_code}")
 
-    def _json_convert(self, resBoth):
-        converted_list = []
-        for key, val in resBoth["current_weather"].items():
-            resBoth["current_weather"][key] = [val]
-        for res in [resBoth["current_weather"], resBoth["daily"]]:
-            converted = [dict() for _ in range(len(res["time"]))]
-            for key in res:
-                match key:
-                    case "time"|"sunrise"|"sunset":
-                        self._distribute(list(map(datetime.fromisoformat, res[key])), key, converted)
-                    case "weathercode":
-                        self._distribute(list(map(self._convert_wmo, res[key])), key, converted)
-                    case "winddirection_10m_dominant"|"winddirection":
-                        self._distribute(list(map(self._convert_wind_direction, res[key])), key, converted)
-                    case _:
-                        self._distribute(res[key], key, converted)
-            converted_list.append(converted)
-        return(converted_list)
-                    
-            
-    def _distribute(self, iter, key, target_list):
-        for x in range(len(target_list)):
-            target_list[x][key] = iter[x]
-
-    def _convert_wind_direction(self,angle):
-        inc = 360/16
-        if angle <= 1*inc and angle > 15*inc:
-            return("North")
-        elif angle <= 3*inc:
-            return("North-East")
-        elif angle <= 5*inc:
-            return("East")
-        elif angle <= 7*inc:
-            return("South-East")
-        elif angle <= 9*inc:
-            return("South")
-        elif angle <= 11*inc:
-            return("South-West")
-        elif angle <= 13*inc:
-            return("West")
-        elif angle <= 15*inc:
-            return ("North-West")
-    
-    def _convert_wmo(self, code):
-        match code:
-            case 0|1:
-                return("clear")
-            case 2|3:
-                return("cloud")
-            case 45|48:
-                return("fog")
-            case 51|53|55|56|57|61|63|65|66|67|80|81|82:
-                return("rain")
-            case 71|73|75|77|85|86:
-                return("snow")
-            case 95|96|99:
-                return("thunderstorm")
-            case _:
-                return(f"{code} not found")
-           
-        
 if __name__ == "__main__":
     w = Weather()
-    r = w.get_weather("zurich, ch", "2023-01-26", "2023-01-27")
+    r = w.get_weather("moow", "2023-01-26", "2023-01-27")
     print(r['location'])
 
     for x in r['data']:
