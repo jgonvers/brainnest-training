@@ -103,6 +103,7 @@ celerybeat.pid
 
 # Environments
 Personal Budgeting App/.env
+.env
 .venv
 env/
 venv/
