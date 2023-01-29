@@ -1,4 +1,3 @@
-import time
 from datetime import datetime
 
 
@@ -7,7 +6,10 @@ class WeatherUtils:
     def parse_location(data):
         try:
             coordinate = (data.get("latt"), data.get("longt"))
-            location = f'{data["standard"]["city"]}, {data["standard"]["countryname"]}'
+            location = (
+                f'{data["standard"]["city"]},'
+                f' {data["standard"]["countryname"]}'
+            )
         except KeyError as e:
             return data
         return {"coordinate": coordinate, "location": location}
@@ -86,7 +88,9 @@ class WeatherUtils:
                 return "cloud"
             case 45 | 48:
                 return "fog"
-            case 51 | 53 | 55 | 56 | 57 | 61 | 63 | 65 | 66 | 67 | 80 | 81 | 82:
+            case (
+                51 | 53 | 55 | 56 | 57 | 61 | 63 | 65 | 66 | 67 | 80 | 81 | 82
+            ):
                 return "rain"
             case 71 | 73 | 75 | 77 | 85 | 86:
                 return "snow"
