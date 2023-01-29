@@ -1,25 +1,31 @@
+import time
 from datetime import datetime
 
 
 class WeatherUtils:
     @staticmethod
     def parse_location(data):
-        coordinate = (data["latt"], data["longt"])
-        location = f'{data["standard"]["city"]}, {data["standard"]["countryname"]}'
+        try:
+            coordinate = (data.get("latt"), data.get("longt"))
+            location = f'{data["standard"]["city"]}, {data["standard"]["countryname"]}'
+        except KeyError as e:
+            return data
         return {"coordinate": coordinate, "location": location}
 
     @staticmethod
-    def json_convert(resBoth):
+    def json_convert(res_both):
         converted_list = []
-        for key, val in resBoth["current_weather"].items():
-            resBoth["current_weather"][key] = [val]
-        for res in [resBoth["current_weather"], resBoth["daily"]]:
+        for key, val in res_both["current_weather"].items():
+            res_both["current_weather"][key] = [val]
+        for res in [res_both["current_weather"], res_both["daily"]]:
             converted = [dict() for _ in range(len(res["time"]))]
             for key in res:
                 match key:
                     case "time" | "sunrise" | "sunset":
                         WeatherUtils.distribute(
-                            list(map(datetime.fromisoformat, res[key])), key, converted
+                            list(map(datetime.fromisoformat, res[key])),
+                            key,
+                            converted,
                         )
                     case "weathercode":
                         WeatherUtils.distribute(
@@ -29,7 +35,12 @@ class WeatherUtils:
                         )
                     case "winddirection_10m_dominant" | "winddirection":
                         WeatherUtils.distribute(
-                            list(map(WeatherUtils.convert_wind_direction, res[key])),
+                            list(
+                                map(
+                                    WeatherUtils.convert_wind_direction,
+                                    res[key],
+                                )
+                            ),
                             key,
                             converted,
                         )
@@ -40,13 +51,16 @@ class WeatherUtils:
 
     @staticmethod
     def distribute(iter, key, target_list):
-        for x in range(len(target_list)):
-            target_list[x][key] = iter[x]
+        try:
+            for x in range(len(target_list)):
+                target_list[x][key] = iter[x]
+        except IndexError:
+            pass
 
     @staticmethod
     def convert_wind_direction(angle):
         inc = 360 / 16
-        if angle <= 1 * inc and angle > 15 * inc:
+        if angle <= 1 * inc or angle > 15 * inc:
             return "North"
         elif angle <= 3 * inc:
             return "North-East"
