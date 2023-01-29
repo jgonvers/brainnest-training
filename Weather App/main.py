@@ -18,7 +18,6 @@ def main():
         app.start()
     except Exception as e:
         logger.error(e)
-        pass
 
 
 if __name__ == "__main__":

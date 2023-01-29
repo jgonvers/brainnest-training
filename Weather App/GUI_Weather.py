@@ -15,13 +15,17 @@ Here are the steps you can take to create this project:
 from utils import TKUtils
 from tkinter import *
 from weather import Weather
+import os
 
 
 class WeatherApp:
     def __init__(self):
+        
         self.window = Tk()
         self.window.title("Weather App")
         self.window.geometry("400x700")
+        self.open_meteo_icon()
+        self.window.iconbitmap(self.icon_image)
 
         self.x = 5
 
@@ -53,6 +57,11 @@ class WeatherApp:
         self.end_date_entry.insert(0, "2023-01-26")
         self.end_date_lbl = TKUtils.create_label(self.window, "Input end date")
         self.end_date_lbl.grid(row=2, column=0)
+        
+    def open_meteo_icon(self):
+        img = "open_meteo.ico"
+        # cwd = os.getcwd()
+        self.icon_image = os.path.join('images', img)
 
     def input_vals(self):
         location = self.location_entry.get()
