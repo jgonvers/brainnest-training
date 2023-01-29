@@ -1,5 +1,6 @@
 from GUI_Weather import WeatherApp
 
+
 def main():
     try:
         app = WeatherApp()
