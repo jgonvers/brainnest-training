@@ -13,14 +13,6 @@ use a string (char list) instead of the ordinal value for the encrypt/decrypt be
 ```
 init the class with a key
 ```
-    def set_key(self, key):
-        self.key = key
-
-    def get_key(self):
-        return self.key
-```
-setter and getter for the key
-```
     def encrypt(self, string):
         output = ""
         for char in string.upper():

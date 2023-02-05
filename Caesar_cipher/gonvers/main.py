@@ -5,12 +5,6 @@ class CaesarCypher:
     def __init__(self, key=0):
         self.key = key
 
-    def set_key(self, key):
-        self.key = key
-
-    def get_key(self):
-        return self.key
-
     def encrypt(self, string):
         output = ""
         for char in string.upper():
@@ -49,6 +43,6 @@ if __name__ == "__main__":
                     key = int(key)
                 except ValueError:
                     print(f"{key} is not a valid key")
-                cypher.set_key(key)
+                cypher.key = key
             case _:
                 print("not a valid command")
