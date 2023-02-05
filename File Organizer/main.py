@@ -7,7 +7,7 @@ logger = logging.getLogger("main")
 logger.setLevel(log_level)
 
 
-if __name__ == '__main__':
+def main():
     rel_main_dir = input("Please insert the path directory to organize:\n> ")
     main_dir = Path.cwd().joinpath(rel_main_dir)
     
@@ -26,3 +26,6 @@ if __name__ == '__main__':
         d.files_by_type()
     else:
         logger.error(f"Invalid option {type_or_day}")
+        
+if __name__ == '__main__':
+    main()
