@@ -50,9 +50,9 @@ if __name__ == "__main__":
                 print("INVALID COMMAND!")
             elif command == "exit":
                 exit()
-        while shift not in range(27):
+        while shift not in range(26):
             shift = int(input("Please enter the key (0 to 25) to use.\n"))
-            if shift not in range(27):
+            if shift not in range(26):
                 print("INVALID KEY!")
         text = input("Enter your message:\n")
         if command == "e":
