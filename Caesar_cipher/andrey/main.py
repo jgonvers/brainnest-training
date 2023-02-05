@@ -6,7 +6,7 @@ class CaesarCipher:
         self.dictionary_size = 26
         self.valid_commands = ["e", "d", "exit"]
         self.encrypt = True
-        self.cipher_valid_shift = range(26)
+        self.cipher_valid_shift = range(self.dictionary_size)
 
     def encrypt_text(self, text: str, shift: int) -> str:
         return "".join(self._transform_character(shift, char) for char in text)
