@@ -10,9 +10,10 @@ logger.setLevel(log_level)
 def main():
     rel_main_dir = input("Please insert the path directory to organize:\n> ")
     main_dir = Path.cwd().joinpath(rel_main_dir)
-    
     logger.debug(f"The main directory is: {main_dir}")
+    
     d = DirOrganizer(main_dir)
+    
     type_or_day = input("Do you want to organize your directory by (t)ype file or modification (d)ay ?\n> ")
     print("The script is running in'Dry run' mode. The program will not perform any changes.")
     mode = input("To deactive 'dry run' mode please insert (y)es:\n> ")

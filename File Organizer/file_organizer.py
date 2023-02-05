@@ -20,10 +20,8 @@ class DirOrganizer:
         
     def files_by_type(self):
         for file in self.main_dir.iterdir():
-            # print(file.name)
             if file.is_file():
                 type_ext = file.suffix.removeprefix('.')
-                # print(type_ext)
                 if self.mode == 'dry':
                     self.show_actions(type_ext, file)
                 else:
