@@ -6,6 +6,7 @@ class CaesarCipher:
         self.dictionary_size = 26
         self.valid_commands = ["e", "d", "exit"]
         self.encrypt = True
+        self.cipher_valid_shift = range(26)
 
     def encrypt_text(self, text: str, shift: int) -> str:
         return "".join(self._transform_character(shift, char) for char in text)
@@ -50,9 +51,9 @@ if __name__ == "__main__":
                 print("INVALID COMMAND!")
             elif command == "exit":
                 exit()
-        while shift not in range(26):
+        while shift not in cipher.cipher_valid_shift:
             shift = int(input("Please enter the key (0 to 25) to use.\n"))
-            if shift not in range(26):
+            if shift not in cipher.cipher_valid_shift:
                 print("INVALID KEY!")
         text = input("Enter your message:\n")
         if command == "e":
